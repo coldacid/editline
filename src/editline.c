@@ -238,7 +238,16 @@ int rl_getc(void)
         r = read(el_infd, &c, 1);
     } while (r == -1 && errno == EINTR);
 
+#ifdef __amigaos__
+    /* Work around issue with AmigaOS 4.x newlib returning > 1 for single-char
+    ** read. The default terminal config set up by the library causes newlib to
+    ** act odd and return extra characters even though the next read() gets the
+    ** next character input without skipping anything. *shrug*
+    */
+    return r > 0 ? c : EOF;
+#else
     return r == 1 ? c : EOF;
+#endif
 }
 
 static int tty_get(void)
